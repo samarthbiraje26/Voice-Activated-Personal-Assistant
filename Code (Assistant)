@@ -1,4 +1,4 @@
-import speech_recognition as sr 
+import speech_recognition as sr
 import pyttsx3
 import requests
 import datetime
@@ -10,7 +10,7 @@ engine.runAndWait()
 
 while True:
     recognizer = sr.Recognizer()
-    
+
     with sr.Microphone() as source:
         recognizer.adjust_for_ambient_noise(source, duration=2)
         print("Please speak something...")
@@ -21,48 +21,51 @@ while True:
         except sr.UnknownValueError:
             print("Assistant: Sorry, I did not understand that")
             engine.say("Sorry, I did not understand that")
-            
+            engine.runAndWait()
+            continue  # Skip to the next iteration
+
         if "Weather" in text:
             city = "Mumbai"
             api_key = "31895d27157d8b36da9d91f08d14d86"
-            url = f"http://api.openweathermap.org/data/2.5/weather?weather?q={city}&appid={api_key}&units=metric"
-            response = request.get(url)
+            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+            response = requests.get(url)
             if response.status_code == 200:
                 data = response.json()
-                weather =data["weather"][0]["description"]
+                weather = data["weather"][0]["description"]
                 temp = data["main"]["temp"]
                 print(f"Assistant: The weather in {city} is {weather} with a temperature of {temp} degree C")
-                engine.say(f"Assistant: The weather in {city} is {weather} with a temperature of {temp} degree C")
-            
+                engine.say(f"The weather in {city} is {weather} with a temperature of {temp} degree C")
             else:
                 engine.say("Sorry, I couldn't fetch the weather")
                 print("Sorry, I couldn't fetch the weather")
             engine.runAndWait()
-            
+
         elif "News" in text:
             api_key_news = "c83dc0a09cg6440d914b14f4eb9a2528"
             url_news = f"http://newsapi.org/v2/top-headlines?country=us&apiKey={api_key_news}"
-            response = request.get(url_news)
+            response = requests.get(url_news)
             if response.status_code == 200:
                 articles = response.json().get("articles", [])
-                headline = [article['title'] for article in articles[:5]]
+                headlines = [article['title'] for article in articles[:5]]
                 print("Assistant: Here are the top 5 news headlines : ")
-                for i, headline in enumerate(headlines, 1):
-                    print(f"{i}. {headline}")
+                for i, headline_title in enumerate(headlines, 1):
+                    print(f"{i}. {headline_title}")
                 engine.say("Here are the top 5 news headlines : " + ", ".join(headlines))
                 engine.runAndWait()
-                
+
         elif "time" in text:
             time = datetime.datetime.now().strftime("%I:%M %p")
             print(f"Assistant: The current time is {time}.")
             engine.say(f"The current time is {time}.")
             engine.runAndWait()
-                
-        elif "exit" or "quit" in text:
+
+        elif "exit" in text or "quit" in text:
+            print("Assistant: Goodbye!")
+            engine.say("Goodbye!")
+            engine.runAndWait()
             break
-        
+
         else:
             print("Assistant: I am not sure how to help with that.")
             engine.say("Assistant: I am not sure how to help with that.")
             engine.runAndWait()
-        
